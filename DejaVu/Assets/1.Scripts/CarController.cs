@@ -15,10 +15,18 @@ public class CarController : MonoBehaviour
     [SerializeField] private float maxSteerAngle;
 
     [Header("Wheel Colliders")]
-    [SerializeField] private WheelCollider FrontLeftCol;
-    [SerializeField] private WheelCollider FrontRightCol;
-    [SerializeField] private WheelCollider RearLeftCol;
-    [SerializeField] private WheelCollider RearRightCol;
+    [SerializeField] private WheelCollider FrontLeftColIn;
+    [SerializeField] private WheelCollider FrontLeftColOut;
+
+    [SerializeField] private WheelCollider FrontRightColIn;
+    [SerializeField] private WheelCollider FrontRightColOut;
+
+    [SerializeField] private WheelCollider RearLeftColIn;
+    [SerializeField] private WheelCollider RearLeftColOut;
+
+    [SerializeField] private WheelCollider RearRightColIn;
+    [SerializeField] private WheelCollider RearRightColOut;
+
 
     [Header("Wheel Transforms")]
     [SerializeField] private Transform FrontLeftTr;
@@ -27,6 +35,8 @@ public class CarController : MonoBehaviour
     [SerializeField] private Transform RearRightTr;
 
     private Rigidbody rigid;
+
+    private bool isGround;
 
     private void Start()
     {
@@ -39,45 +49,69 @@ public class CarController : MonoBehaviour
         HandleMotor();
         HandleSteering();
 
-        UpdateWheel(FrontRightCol, FrontRightTr);
-        UpdateWheel(FrontLeftCol, FrontLeftTr);
-        UpdateWheel(RearRightCol, RearRightTr);
-        UpdateWheel(RearLeftCol, RearLeftTr);
+        UpdateWheel(FrontRightColIn, FrontRightTr);
+        UpdateWheel(FrontLeftColIn, FrontLeftTr);
+        //UpdateWheel(RearRightColIn, RearRightTr);
+        //UpdateWheel(RearLeftColIn, RearLeftTr);
 
-        rigid.AddForce(new Vector3(0f, downForce, 0f));
+        rigid.AddForceAtPosition((500f + downForce * Mathf.Abs(vertical)) * -transform.up, horizontal * transform.right + transform.position);
+        //Debug.DrawRay(horizontal * transform.right + transform.position, downForce * Mathf.Abs(vertical) * -transform.up, Color.red);
+        //Debug.Log(horizontal * transform.right + transform.position);
     }
 
     private void HandleMotor()
     {
-        FrontLeftCol.motorTorque = motorForce * vertical;
-        FrontRightCol.motorTorque = motorForce * vertical;
+        float force = motorForce * vertical;
+        FrontLeftColIn.motorTorque = force;
+        FrontLeftColOut.motorTorque = force;
+
+        FrontRightColIn.motorTorque = force;
+        FrontRightColOut.motorTorque = force;
 
         if (isBraking)
         {
-            FrontLeftCol.brakeTorque = brakeForce;
-            FrontRightCol.brakeTorque = brakeForce;
-            RearLeftCol.brakeTorque = brakeForce;
-            RearRightCol.brakeTorque = brakeForce;
+            FrontLeftColIn.brakeTorque = brakeForce;
+            FrontLeftColOut.brakeTorque = brakeForce;
+
+            FrontRightColIn.brakeTorque = brakeForce;
+            FrontRightColOut.brakeTorque = brakeForce;
+
+            RearLeftColIn.brakeTorque = brakeForce;
+            RearLeftColOut.brakeTorque = brakeForce;
+
+            RearRightColIn.brakeTorque = brakeForce;
+            RearRightColOut.brakeTorque = brakeForce;
         }
         else
         {
-            FrontLeftCol.brakeTorque = 0f;
-            FrontRightCol.brakeTorque = 0f;
-            RearLeftCol.brakeTorque = 0f;
-            RearRightCol.brakeTorque = 0f;
+            FrontLeftColIn.brakeTorque = 0f;
+            FrontLeftColOut.brakeTorque = 0f;
+
+            FrontRightColIn.brakeTorque = 0f;
+            FrontRightColOut.brakeTorque = 0f;
+
+            RearLeftColIn.brakeTorque = 0f;
+            RearLeftColOut.brakeTorque = 0f;
+
+            RearRightColIn.brakeTorque = 0f;
+            RearRightColOut.brakeTorque = 0f;
         }
     }
 
     private void HandleSteering()
     {
-        FrontLeftCol.steerAngle = maxSteerAngle * horizontal;
-        FrontRightCol.steerAngle = maxSteerAngle * horizontal;
+        float steer = maxSteerAngle * horizontal;
+        FrontLeftColIn.steerAngle = steer;
+        FrontLeftColOut.steerAngle = steer;
+
+        FrontRightColIn.steerAngle = steer;
+        FrontRightColOut.steerAngle = steer;
     }
 
     private void UpdateWheel(WheelCollider wheelCol, Transform wheelTr)
     {
-        wheelCol.GetWorldPose(out Vector3 pos, out Quaternion rot);
-        wheelTr.SetPositionAndRotation(pos, rot);
+        wheelCol.GetWorldPose(out _, out Quaternion rot);
+        wheelTr.rotation = rot;
     }
 
     #region INPUTS
@@ -93,4 +127,20 @@ public class CarController : MonoBehaviour
         isBraking = Input.GetKey(KeyCode.Space);
     }
     #endregion
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.transform.CompareTag("Ground"))
+        {
+            isGround = true;
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.transform.CompareTag("Ground"))
+        {
+            isGround = false;
+        }
+    }
 }
