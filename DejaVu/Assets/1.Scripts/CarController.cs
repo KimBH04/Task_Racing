@@ -41,7 +41,10 @@ public class CarController : MonoBehaviour
     private void Start()
     {
         rigid = GetComponent<Rigidbody>();
+        rigid.centerOfMass = new Vector3(0f, 0.25f, -0.1f);
     }
+
+    private Vector3 lastFrame;
 
     private void FixedUpdate()
     {
@@ -51,12 +54,16 @@ public class CarController : MonoBehaviour
 
         UpdateWheel(FrontRightColIn, FrontRightTr);
         UpdateWheel(FrontLeftColIn, FrontLeftTr);
-        //UpdateWheel(RearRightColIn, RearRightTr);
-        //UpdateWheel(RearLeftColIn, RearLeftTr);
+        UpdateWheel(RearRightColIn, RearRightTr);
+        UpdateWheel(RearLeftColIn, RearLeftTr);
 
-        rigid.AddForceAtPosition((500f + downForce * Mathf.Abs(vertical)) * -transform.up, horizontal * transform.right + transform.position);
+        rigid.AddForce(downForce * Mathf.Abs(vertical) * -transform.up);
+        //rigid.AddForceAtPosition((500f + downForce * Mathf.Abs(vertical)) * -transform.up, horizontal * transform.right + transform.position);
         //Debug.DrawRay(horizontal * transform.right + transform.position, downForce * Mathf.Abs(vertical) * -transform.up, Color.red);
         //Debug.Log(horizontal * transform.right + transform.position);
+
+        Debug.Log($"{(transform.position - lastFrame).magnitude * 168f:0}km/h");
+        lastFrame = transform.position;
     }
 
     private void HandleMotor()
