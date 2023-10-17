@@ -36,6 +36,8 @@ public class CarController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI speedPanel;
     private float kilometerPerHour;
 
+    [SerializeField] private GameObject backLights;
+
     private void Start()
     {
         rigid = GetComponent<Rigidbody>();
@@ -43,8 +45,6 @@ public class CarController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        kilometerPerHour = (transform.position - lastFrame).magnitude * 168f;
-
         GetInput();
         HandleMotor();
         HandleSteering();
@@ -58,8 +58,7 @@ public class CarController : MonoBehaviour
 
         rigid.AddForce(downForce * Mathf.Abs(vertical) * -transform.up);
 
-        //Debug.Log($"{(transform.position - lastFrame).magnitude * 168f:0}km/h");
-        lastFrame = transform.position;
+        backLights.SetActive(vertical < 0 || isBraking);
     }
 
     private void HandleMotor()
@@ -115,7 +114,9 @@ public class CarController : MonoBehaviour
 
     private void InstrumentPanel()
     {
+        kilometerPerHour = (transform.position - lastFrame).magnitude * 168f;
         needle.localEulerAngles = new Vector3(0f, 0f, 120f - (1.2f * kilometerPerHour));
         speedPanel.text = $"{(int)kilometerPerHour}km/h";
+        lastFrame = transform.position;
     }
 }
