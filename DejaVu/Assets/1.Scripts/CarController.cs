@@ -15,6 +15,7 @@ public class CarController : MonoBehaviour
     [SerializeField] private float brakeForce;
     [SerializeField] private float downForce;
     [SerializeField] private float maxSteerAngle;
+    [SerializeField, Range(0f, 100f)] private float slipAngle;
 
     [Header("Wheel Colliders")]
     [SerializeField] private WheelCollider FrontLeftCol;
@@ -28,15 +29,15 @@ public class CarController : MonoBehaviour
     [SerializeField] private Transform RearLeftTr;
     [SerializeField] private Transform RearRightTr;
 
-    private Rigidbody rigid;
-    private Vector3 lastFrame;
-
     [Header("Instrument Panel")]
     [SerializeField] private Transform needle;
     [SerializeField] private TextMeshProUGUI speedPanel;
     private float kilometerPerHour;
 
     [SerializeField] private GameObject backLights;
+
+    private Rigidbody rigid;
+    private Vector3 lastFrame;
 
     private void Start()
     {
@@ -123,16 +124,32 @@ public class CarController : MonoBehaviour
 
     private void SlipCheck()
     {
-        float x1 = transform.forward.x;
-        float y1 = transform.forward.z;
+        float x1;
+        float y1;
+
+        if (vertical > 0)
+        {
+            x1 = transform.forward.x;
+            y1 = transform.forward.z;
+        }
+        else if (vertical < 0)
+        {
+            x1 = -transform.forward.x;
+            y1 = -transform.forward.z;
+        }
+        else
+        {
+            return;
+        }
 
         float x2 = rigid.velocity.x;
         float y2 = rigid.velocity.z;
 
         float degree1 = Mathf.Atan2(y1, x1) * Mathf.Rad2Deg;
         float degree2 = Mathf.Atan2(y2, x2) * Mathf.Rad2Deg;
+        float degree = degree1 - degree2;
 
-        if (degree1 - degree2 > 10f || degree1 - degree2 < -10f)
+        if (degree > slipAngle || degree < -slipAngle)
         {
             Debug.Log("Slipping!");
         }

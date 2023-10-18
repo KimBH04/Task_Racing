@@ -748,8 +748,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   offset: {x: 0, y: 2, z: -5}
   target: {fileID: 1937533430}
-  translateSpeed: 100
-  rotationSpeed: 100
+  translateSpeed: 10
+  rotationSpeed: 10
 --- !u!1 &1115198071
 GameObject:
   m_ObjectHideFlags: 0
@@ -1500,6 +1500,10 @@ PrefabInstance:
       propertyPath: needle
       value: 
       objectReference: {fileID: 94020592}
+    - target: {fileID: 1040475589862687594, guid: 2c78953ab5fc4f64bada25515886f142, type: 3}
+      propertyPath: slipAngle
+      value: 15
+      objectReference: {fileID: 0}
     - target: {fileID: 1040475589862687594, guid: 2c78953ab5fc4f64bada25515886f142, type: 3}
       propertyPath: backLights
       value: 
