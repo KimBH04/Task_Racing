@@ -55,6 +55,7 @@ public class CarController : MonoBehaviour
         UpdateWheel(RearLeftCol, RearLeftTr);
 
         InstrumentPanel();
+        SlipCheck();
 
         rigid.AddForce(downForce * Mathf.Abs(vertical) * -transform.up);
 
@@ -118,5 +119,22 @@ public class CarController : MonoBehaviour
         needle.localEulerAngles = new Vector3(0f, 0f, 120f - (1.2f * kilometerPerHour));
         speedPanel.text = $"{(int)kilometerPerHour}km/h";
         lastFrame = transform.position;
+    }
+
+    private void SlipCheck()
+    {
+        float x1 = transform.forward.x;
+        float y1 = transform.forward.z;
+
+        float x2 = rigid.velocity.x;
+        float y2 = rigid.velocity.z;
+
+        float degree1 = Mathf.Atan2(y1, x1) * Mathf.Rad2Deg;
+        float degree2 = Mathf.Atan2(y2, x2) * Mathf.Rad2Deg;
+
+        if (degree1 - degree2 > 10f || degree1 - degree2 < -10f)
+        {
+            Debug.Log("Slipping!");
+        }
     }
 }
