@@ -39,9 +39,12 @@ public class CarController : MonoBehaviour
     private Rigidbody rigid;
     private Vector3 lastFrame;
 
+    private AudioSource source;
+
     private void Start()
     {
         rigid = GetComponent<Rigidbody>();
+        source = GetComponent<AudioSource>();
     }
 
     private void FixedUpdate()
@@ -112,7 +115,7 @@ public class CarController : MonoBehaviour
     {
         isBraking = Input.GetKey(KeyCode.Space);
     }
-    #endregion
+    #endregion            
 
     private void InstrumentPanel()
     {
@@ -127,18 +130,19 @@ public class CarController : MonoBehaviour
         float x1;
         float y1;
 
-        if (vertical > 0)
+        if (vertical > 0f)
         {
             x1 = transform.forward.x;
             y1 = transform.forward.z;
         }
-        else if (vertical < 0)
+        else if (vertical < 0f)
         {
             x1 = -transform.forward.x;
             y1 = -transform.forward.z;
         }
         else
         {
+            source.Stop();
             return;
         }
 
@@ -149,9 +153,14 @@ public class CarController : MonoBehaviour
         float degree2 = Mathf.Atan2(y2, x2) * Mathf.Rad2Deg;
         float degree = degree1 - degree2;
 
-        if (degree > slipAngle || degree < -slipAngle)
+        if (degree > slipAngle || degree < -slipAngle && vertical != 0f)
         {
-            Debug.Log("Slipping!");
+            AudioManager.Instance.PlayAudio(source, "Drift");
+            Debug.Log("Drift");
+        }
+        else
+        {
+            source.Stop();
         }
     }
 }
