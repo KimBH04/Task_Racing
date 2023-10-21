@@ -5,17 +5,17 @@ using UnityEngine.InputSystem;
 
 public class CarController : MonoBehaviour
 {
-    private float horizontal;
-    private float vertical;
+    private float horizontal; //전후
+    private float vertical;   //좌우
 
-    private bool isBraking;
+    private bool isBraking;  //브레이크 체크
 
     [Header("Car")]
-    [SerializeField] private float motorForce;
-    [SerializeField] private float brakeForce;
-    [SerializeField] private float downForce;
-    [SerializeField] private float maxSteerAngle;
-    [SerializeField, Range(0f, 100f)] private float slipAngle;
+    [SerializeField] private float motorForce;                  //회전력
+    [SerializeField] private float brakeForce;                  //브레이크 힘
+    [SerializeField] private float downForce;                   //공기에 의해 아래로 받는 힘
+    [SerializeField] private float maxSteerAngle;               //앞 바퀴 최대 회전 각
+    [SerializeField, Range(0f, 90f)] private float slipAngle;   //미끄러짐 판별 각
 
     [Header("Wheel Colliders")]
     [SerializeField] private WheelCollider FrontLeftCol;
@@ -37,14 +37,14 @@ public class CarController : MonoBehaviour
     [SerializeField] private GameObject backLights;
 
     private Rigidbody rigid;
-    private Vector3 lastFrame;
+    private Vector3 lastFrame;  //현재 속도를 측정하기 위한 이전 프레임의 위치
 
-    private AudioSource source;
+    [Header("Audios")]
+    [SerializeField] private AudioSource slipSource;
 
     private void Start()
     {
         rigid = GetComponent<Rigidbody>();
-        source = GetComponent<AudioSource>();
     }
 
     private void FixedUpdate()
@@ -59,7 +59,18 @@ public class CarController : MonoBehaviour
         UpdateWheel(RearLeftCol, RearLeftTr);
 
         InstrumentPanel();
-        SlipCheck();
+        if (kilometerPerHour > 15f && (
+            FrontLeftCol.isGrounded ||
+            FrontRightCol.isGrounded ||
+            RearLeftCol.isGrounded ||
+            RearRightCol.isGrounded))
+        {
+            SlipCheck();
+        }
+        else
+        {
+            AudioManager.Instance.StopAudioFadeOut(slipSource, 0.2f);
+        }
 
         rigid.AddForce(downForce * Mathf.Abs(vertical) * -transform.up);
 
@@ -127,24 +138,8 @@ public class CarController : MonoBehaviour
 
     private void SlipCheck()
     {
-        float x1;
-        float y1;
-
-        if (vertical > 0f)
-        {
-            x1 = transform.forward.x;
-            y1 = transform.forward.z;
-        }
-        else if (vertical < 0f)
-        {
-            x1 = -transform.forward.x;
-            y1 = -transform.forward.z;
-        }
-        else
-        {
-            source.Stop();
-            return;
-        }
+        float x1 = transform.forward.x;
+        float y1 = transform.forward.z;
 
         float x2 = rigid.velocity.x;
         float y2 = rigid.velocity.z;
@@ -153,14 +148,15 @@ public class CarController : MonoBehaviour
         float degree2 = Mathf.Atan2(y2, x2) * Mathf.Rad2Deg;
         float degree = degree1 - degree2;
 
-        if (degree > slipAngle || degree < -slipAngle && vertical != 0f)
+        degree %= degree > 0f ? 180f : -180f;
+
+        if ((degree > slipAngle && degree < 180f - slipAngle) || (degree < -slipAngle && degree > -180f + slipAngle))
         {
-            AudioManager.Instance.PlayAudio(source, "Drift");
-            Debug.Log("Drift");
+            AudioManager.Instance.PlayAudioFadeIn(slipSource, "Drift", 0.2f, loop: true);
         }
         else
         {
-            source.Stop();
+            AudioManager.Instance.StopAudioFadeOut(slipSource, 0.2f);
         }
     }
 }

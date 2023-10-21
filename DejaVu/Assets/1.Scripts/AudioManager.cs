@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class AudioManager : MonoBehaviour
 {
-    public static AudioManager Instance;
+    public static AudioManager Instance { get; private set; }
 
     [Header("BGM")]
     [SerializeField] private AudioClip bgm;
@@ -35,18 +36,25 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    public void PlayAudio(AudioSource source, string audioName)
+    public void PlayAudioFadeIn(AudioSource source, string audioName, float fadeTime, float volume = 1f, bool loop = false)
     {
         if (!source.isPlaying)
         {
             source.clip = sfxClipsDict[audioName];
-            source.volume = sfxVolume;
+            source.loop = loop;
             source.Play();
+
+            source.DOKill();
+            source.DOFade(sfxVolume * volume, fadeTime);
         }
     }
 
-    public void StopAudio(AudioSource source)
+    public void StopAudioFadeOut(AudioSource source, float fadeTime)
     {
-        source.Stop();
+        if (source.isPlaying)
+        {
+            source.DOFade(0f, fadeTime).OnComplete(source.Stop);
+            source.loop = false;
+        }
     }
 }
