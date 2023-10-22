@@ -36,16 +36,27 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    public void PlayAudioFadeIn(AudioSource source, string audioName, float fadeTime, float volume = 1f, bool loop = false)
+    public void PlayAudio(AudioSource source, string audioName, float volume = 1f, bool loop = true)
     {
+        if (!source.isPlaying)
+        {
+            source.clip = sfxClipsDict[audioName];
+            source.volume = volume * sfxVolume;
+            source.loop = loop;
+            source.Play();
+        }
+    }
+
+    public void PlayAudioFadeIn(AudioSource source, string audioName, float fadeTime, float volume = 1f, float pitch = 1f, bool loop = false)
+    {
+        source.pitch = pitch;
+        source.DOKill();
+        source.DOFade(sfxVolume * volume, fadeTime);
         if (!source.isPlaying)
         {
             source.clip = sfxClipsDict[audioName];
             source.loop = loop;
             source.Play();
-
-            source.DOKill();
-            source.DOFade(sfxVolume * volume, fadeTime);
         }
     }
 

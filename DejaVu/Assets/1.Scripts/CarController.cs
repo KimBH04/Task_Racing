@@ -23,6 +23,9 @@ public class CarController : MonoBehaviour
     [SerializeField] private WheelCollider RearLeftCol;
     [SerializeField] private WheelCollider RearRightCol;
 
+    [SerializeField] private TrailRenderer leftSkid, rightSkid;
+    [SerializeField] private ParticleSystem leftSmoke, rightSmoke;
+
     [Header("Wheel Transforms")]
     [SerializeField] private Transform FrontLeftTr;
     [SerializeField] private Transform FrontRightTr;
@@ -40,11 +43,13 @@ public class CarController : MonoBehaviour
     private Vector3 lastFrame;  //현재 속도를 측정하기 위한 이전 프레임의 위치
 
     [Header("Audios")]
-    [SerializeField] private AudioSource slipSource;
+    [SerializeField] private AudioSource slipSource;    //미끄러짐 소스
+    [SerializeField] private AudioSource engine;        //엔진 소리
 
     private void Start()
     {
         rigid = GetComponent<Rigidbody>();
+        AudioManager.Instance.PlayAudio(engine, "Idle", 2f, true);
     }
 
     private void FixedUpdate()
@@ -58,19 +63,17 @@ public class CarController : MonoBehaviour
         UpdateWheel(RearRightCol, RearRightTr);
         UpdateWheel(RearLeftCol, RearLeftTr);
 
-        InstrumentPanel();
-        if (kilometerPerHour > 15f && (
-            FrontLeftCol.isGrounded ||
-            FrontRightCol.isGrounded ||
-            RearLeftCol.isGrounded ||
-            RearRightCol.isGrounded))
+        EngineSound();
+        if (kilometerPerHour > 15f && (FrontLeftCol.isGrounded || FrontRightCol.isGrounded || RearLeftCol.isGrounded || RearRightCol.isGrounded))
         {
             SlipCheck();
         }
         else
         {
             AudioManager.Instance.StopAudioFadeOut(slipSource, 0.2f);
+            SkidMarking(false);
         }
+        InstrumentPanel();
 
         rigid.AddForce(downForce * Mathf.Abs(vertical) * -transform.up);
 
@@ -136,6 +139,12 @@ public class CarController : MonoBehaviour
         lastFrame = transform.position;
     }
 
+    private void EngineSound()
+    {
+        float speed2percentage = kilometerPerHour / 150f;
+        engine.pitch = speed2percentage + 1f;
+    }
+
     private void SlipCheck()
     {
         float x1 = transform.forward.x;
@@ -152,11 +161,45 @@ public class CarController : MonoBehaviour
 
         if ((degree > slipAngle && degree < 180f - slipAngle) || (degree < -slipAngle && degree > -180f + slipAngle))
         {
-            AudioManager.Instance.PlayAudioFadeIn(slipSource, "Drift", 0.2f, loop: true);
+            AudioManager.Instance.PlayAudioFadeIn(slipSource, "Drift", 0.2f, kilometerPerHour / 100f, kilometerPerHour / 150f + 1f, true);
+            SkidMarking(true);
         }
         else
         {
             AudioManager.Instance.StopAudioFadeOut(slipSource, 0.2f);
+            SkidMarking(false);
+        }
+    }
+
+    private void SkidMarking(bool isSlipping)
+    {
+        leftSkid.emitting = RearLeftCol.isGrounded && isSlipping;
+        rightSkid.emitting = RearRightCol.isGrounded && isSlipping;
+
+        Debug.Log($"{leftSmoke.isPlaying} {rightSmoke.isPlaying}");
+
+        if (leftSkid.emitting)
+        {
+            if (!leftSmoke.isPlaying)
+            {
+                leftSmoke.Play();
+            }
+        }
+        else
+        {
+            leftSmoke.Stop();
+        }
+
+        if (rightSkid.emitting)
+        {
+            if (!rightSmoke.isPlaying)
+            {
+                rightSmoke.Play();
+            }
+        }
+        else
+        {
+            rightSmoke.Stop();
         }
     }
 }
