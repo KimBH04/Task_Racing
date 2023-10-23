@@ -48,10 +48,18 @@ public class CarController : MonoBehaviour
     [SerializeField] private AudioSource slipSource;    //미끄러짐 소리 소스
     [SerializeField] private AudioSource engine;        //엔진 소리 소스
 
+    [Header("Effect")]
+    [SerializeField] private ParticleSystem wind;
+    private MainModule main;
+    private EmissionModule emission;
+
     private void Start()
     {
         rigid = GetComponent<Rigidbody>();
         AudioManager.Instance.PlayAudio(engine, "Idle", 2f, true);
+
+        main = wind.main;
+        emission = wind.emission;
     }
 
     private void FixedUpdate()
@@ -76,6 +84,8 @@ public class CarController : MonoBehaviour
             SkidMarking(false);
         }
         InstrumentPanel();
+
+        WindEffect();
 
         rigid.AddForce(downForce * Mathf.Abs(vertical) * -transform.up);
 
@@ -137,7 +147,9 @@ public class CarController : MonoBehaviour
     {
         kilometerPerHour = (transform.position - lastFrame).magnitude * 168f;
         needle.localEulerAngles = new Vector3(0f, 0f, 120f - (1.5f * kilometerPerHour));
+
         speedPanel.text = $"{(int)kilometerPerHour}km/h";
+
         lastFrame = transform.position;
     }
 
@@ -160,7 +172,7 @@ public class CarController : MonoBehaviour
         
         if (degree > slipAngle && degree < 180f - slipAngle)
         {
-            AudioManager.Instance.PlayAudioFadeIn(slipSource, "Drift", 0.2f, kilometerPerHour / 100f, kilometerPerHour / 150f + 1f, true);
+            AudioManager.Instance.PlayAudioFadeIn(slipSource, "Drift", 0.2f, kilometerPerHour / 100f, kilometerPerHour / 100f + 1f, true);
             SkidMarking(true);
         }
         else
@@ -205,5 +217,13 @@ public class CarController : MonoBehaviour
             rightSmoke.Stop();
             this.isSlipping = false;
         }
+    }
+
+    private void WindEffect()
+    {
+        main.startSpeed = kilometerPerHour;
+        emission.rateOverTime = kilometerPerHour / 2f;
+
+        wind.transform.LookAt(transform.position - rigid.velocity);
     }
 }

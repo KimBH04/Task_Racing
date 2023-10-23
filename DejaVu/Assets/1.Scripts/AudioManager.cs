@@ -36,6 +36,18 @@ public class AudioManager : MonoBehaviour
         }
     }
 
+    public void StartBGM()
+    {
+        bgmSource.clip = bgm;
+        bgmSource.volume = bgmVolume;
+        bgmSource.Play();
+    }
+
+    public void StopBGM()
+    {
+
+    }
+
     public void PlayAudio(AudioSource source, string audioName, float volume = 1f, bool loop = true)
     {
         if (!source.isPlaying)
