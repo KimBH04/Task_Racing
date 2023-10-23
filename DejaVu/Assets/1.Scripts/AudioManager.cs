@@ -7,6 +7,9 @@ public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance { get; private set; }
 
+    [Header("Master")]
+    [Range(0f, 1f)] public float masterVolume = 1f;
+
     [Header("BGM")]
     [SerializeField] private AudioClip bgm;
     [SerializeField] private AudioSource bgmSource;

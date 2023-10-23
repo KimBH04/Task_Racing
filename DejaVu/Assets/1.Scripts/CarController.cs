@@ -74,7 +74,7 @@ public class CarController : MonoBehaviour
         UpdateWheel(RearLeftCol, RearLeftTr);
 
         EngineSound();
-        if (kilometerPerHour > 15f && (FrontLeftCol.isGrounded || FrontRightCol.isGrounded || RearLeftCol.isGrounded || RearRightCol.isGrounded))
+        if (kilometerPerHour > 5f && (FrontLeftCol.isGrounded || FrontRightCol.isGrounded || RearLeftCol.isGrounded || RearRightCol.isGrounded))
         {
             SlipCheck();
         }
@@ -87,7 +87,7 @@ public class CarController : MonoBehaviour
 
         WindEffect();
 
-        rigid.AddForce(downForce * Mathf.Abs(vertical) * -transform.up);
+        rigid.AddForce(downForce * -transform.up);
 
         backLights.SetActive(vertical < 0 || isBraking);
     }
@@ -99,6 +99,12 @@ public class CarController : MonoBehaviour
         FrontRightCol.motorTorque = force;
         RearLeftCol.motorTorque = force;
         RearRightCol.motorTorque = force;
+
+        if (vertical == 0 && horizontal != 0)
+        {
+            FrontLeftCol.motorTorque = RearLeftCol.rpm;
+            FrontRightCol.motorTorque = RearRightCol.rpm;
+        }
 
         if (isBraking)
         {
@@ -145,7 +151,7 @@ public class CarController : MonoBehaviour
 
     private void InstrumentPanel()
     {
-        kilometerPerHour = (transform.position - lastFrame).magnitude * 168f;
+        kilometerPerHour = (transform.position - lastFrame).magnitude * 84f;
         needle.localEulerAngles = new Vector3(0f, 0f, 120f - (1.5f * kilometerPerHour));
 
         speedPanel.text = $"{(int)kilometerPerHour}km/h";
@@ -221,8 +227,8 @@ public class CarController : MonoBehaviour
 
     private void WindEffect()
     {
-        main.startSpeed = kilometerPerHour;
-        emission.rateOverTime = kilometerPerHour / 2f;
+        main.startSpeed = kilometerPerHour * 2f;
+        emission.rateOverTime = kilometerPerHour;
 
         wind.transform.LookAt(transform.position - rigid.velocity);
     }
