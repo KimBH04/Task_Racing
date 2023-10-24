@@ -31,7 +31,7 @@ public class AudioManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
-        DontDestroyOnLoad(gameObject);
+        //DontDestroyOnLoad(gameObject);
 
         foreach (AudioClip clip in sfxClips)
         {
@@ -48,7 +48,7 @@ public class AudioManager : MonoBehaviour
 
     public void StopBGM()
     {
-
+        StopAudioFadeOut(bgmSource, 5f);
     }
 
     public void PlayAudio(AudioSource source, string audioName, float volume = 1f, bool loop = true)

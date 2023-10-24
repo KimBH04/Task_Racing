@@ -61,13 +61,19 @@ public class CarController : MonoBehaviour
         main = wind.main;
         emission = wind.emission;
 
-        GameManager.Instance.Init();
+        GameManager.Instance.ReturnPoint(transform);
+        lastFrame = transform.position;
     }
 
     private void FixedUpdate()
     {
-        if (!GameManager.isStart)
+        InstrumentPanel();
+
+        if (!GameManager.isStart || GameManager.isEnd)
+        {
+            AudioManager.Instance.StopAudioFadeOut(slipSource, 0.2f);
             return;
+        }
 
         GetInput();
         HandleMotor();
@@ -88,7 +94,6 @@ public class CarController : MonoBehaviour
             AudioManager.Instance.StopAudioFadeOut(slipSource, 0.2f);
             SkidMarking(false);
         }
-        InstrumentPanel();
 
         WindEffect();
 
@@ -206,7 +211,7 @@ public class CarController : MonoBehaviour
         
         if (degree > slipAngle && degree < 180f - slipAngle)
         {
-            AudioManager.Instance.PlayAudioFadeIn(slipSource, "Drift", 0.2f, kilometerPerHour / 100f, kilometerPerHour / 100f + 1f, true);
+            AudioManager.Instance.PlayAudioFadeIn(slipSource, "Drift", 0.2f, kilometerPerHour / 120f, kilometerPerHour / 120f + 1f, true);
             SkidMarking(true);
         }
         else

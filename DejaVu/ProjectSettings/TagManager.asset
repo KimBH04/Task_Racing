@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Ground
+  - GuardRail
   layers:
   - Default
   - TransparentFX
@@ -12,7 +13,7 @@ TagManager:
   - 
   - Water
   - UI
-  - Road
+  - Navigation
   - 
   - 
   - 

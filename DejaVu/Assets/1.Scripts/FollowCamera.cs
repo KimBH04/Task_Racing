@@ -12,8 +12,13 @@ public class FollowCamera : MonoBehaviour
 
     private void FixedUpdate()
     {
-        HandleTranslation();
         HandleRotation();
+        if (GameManager.isEnd)
+        {
+            return;
+        }
+
+        HandleTranslation();
     }
 
     private void HandleTranslation()
