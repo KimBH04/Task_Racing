@@ -39,7 +39,7 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    public void StartBGM()
+    public void Start()
     {
         bgmSource.clip = bgm;
         bgmSource.volume = bgmVolume;

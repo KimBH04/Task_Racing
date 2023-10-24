@@ -60,10 +60,15 @@ public class CarController : MonoBehaviour
 
         main = wind.main;
         emission = wind.emission;
+
+        GameManager.Instance.Init();
     }
 
     private void FixedUpdate()
     {
+        if (!GameManager.isStart)
+            return;
+
         GetInput();
         HandleMotor();
         HandleSteering();
@@ -92,6 +97,29 @@ public class CarController : MonoBehaviour
         backLights.SetActive(vertical < 0 || isBraking);
     }
 
+    private void Update()
+    {
+        if (!GameManager.isStart)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            GameManager.Instance.ReturnPoint(transform);
+
+            rigid.velocity = Vector3.zero;
+
+            FrontLeftCol.brakeTorque = brakeForce;
+            FrontRightCol.brakeTorque = brakeForce;
+            RearLeftCol.brakeTorque = brakeForce;
+            RearRightCol.brakeTorque = brakeForce;
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        GameManager.Instance.SetPoint(other);
+    }
+
     private void HandleMotor()
     {
         float force = motorForce * vertical;
@@ -100,10 +128,10 @@ public class CarController : MonoBehaviour
         RearLeftCol.motorTorque = force;
         RearRightCol.motorTorque = force;
 
-        if (vertical == 0 && horizontal != 0)
+        if (horizontal != 0)
         {
-            FrontLeftCol.motorTorque = RearLeftCol.rpm;
-            FrontRightCol.motorTorque = RearRightCol.rpm;
+            FrontLeftCol.motorTorque = RearLeftCol.rpm + force;
+            FrontRightCol.motorTorque = RearRightCol.rpm + force;
         }
 
         if (isBraking)
@@ -151,7 +179,7 @@ public class CarController : MonoBehaviour
 
     private void InstrumentPanel()
     {
-        kilometerPerHour = (transform.position - lastFrame).magnitude * 84f;
+        kilometerPerHour = (transform.position - lastFrame).magnitude * 126f;
         needle.localEulerAngles = new Vector3(0f, 0f, 120f - (1.5f * kilometerPerHour));
 
         speedPanel.text = $"{(int)kilometerPerHour}km/h";
